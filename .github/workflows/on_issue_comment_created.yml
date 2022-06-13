@@ -40,5 +40,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
           env: ${{ steps.deployment.outputs.env }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
           ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
