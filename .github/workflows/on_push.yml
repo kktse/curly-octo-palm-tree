@@ -1,0 +1,32 @@
+name: On push
+
+on: push
+
+jobs:
+  on_push:
+    name: On push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Start deployment (main)
+        id: deployment
+        if: github.ref == 'refs/heads/main'
+        uses: bobheadxi/deployments@v1
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: main
+
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: bash
+
+      - name: Update deployment status (main)
+        if: always() && github.ref == 'refs/heads/main'
+        uses: bobheadxi/deployments@v1
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          env: ${{ steps.deployment.outputs.env }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }

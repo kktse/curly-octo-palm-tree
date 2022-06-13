@@ -1,0 +1,44 @@
+name: On issue comment created
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  on_issue_comment_created:
+    name: On issue comment created
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: get pr ref
+        id: get_pull_request_ref
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:repository/pulls/:issue_id
+          repository: ${{ github.repository }}
+          issue_id: ${{ github.event.issue.number }}
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Start deployment (push)
+        id: deployment
+        uses: bobheadxi/deployments@v1
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: push
+          ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
+
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: bash
+
+      - name: Update deployment status (push)
+        uses: bobheadxi/deployments@v1
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          env: ${{ steps.deployment.outputs.env }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }
+          ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
